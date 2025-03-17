@@ -1,3 +1,5 @@
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -7,9 +9,10 @@ from skimage.morphology import remove_small_objects, remove_small_holes, binary_
 import os
 from glob import glob
 import csv
+from skimage.measure import label
 
-# Enable interactive mode
-plt.ion()
+
+
 
 # Function to visualize a specific time point and channel
 def visualize_timepoint(stack, time_index, channel_index):
@@ -20,43 +23,11 @@ def visualize_timepoint(stack, time_index, channel_index):
     plt.show(block=False)
     plt.waitforbuttonpress()  # Wait for a button press to continue
 
-# Function to segment nucleus
-from skimage.measure import label
-
-def segment_nucleus(image):
-    thresh = threshold_otsu(image)
-    binary_mask = image > thresh
-    clean_mask = remove_small_objects(binary_mask, min_size=30)
-    clean_mask = remove_small_holes(clean_mask, area_threshold=50)
-    opened_mask = binary_opening(clean_mask, footprint=disk(2))
-    
-    # Label the mask to assign unique labels to each nucleus
-    labeled_mask = label(opened_mask)
-    
-    return labeled_mask
-
-from skimage.morphology import binary_dilation
-
-
-
-def create_cytoplasm_roi(nucleus_mask, dilation_radius=5):
-    # Create a binary mask for the nuclei
-    binary_nucleus_mask = nucleus_mask > 0
-
-    # Dilate the binary nucleus mask
-    dilated_mask = binary_dilation(binary_nucleus_mask, footprint=disk(dilation_radius))
-
-    # Create the cytoplasm ring by subtracting the nucleus mask from the dilated mask
-    cytoplasm_ring = dilated_mask ^ binary_nucleus_mask
-
-    # Assign the same labels as the nucleus mask to the cytoplasm ring
-    cytoplasm_mask = np.where(cytoplasm_ring, nucleus_mask, 0)
-
-    return cytoplasm_mask
 
 # Function to measure mean intensity in a given mask (nucleus or cytoplasm)
 def measure_intensity(image, mask):
     return np.mean(image[mask == 1])
+
 
 # Function to measure intensities for both nucleus and cytoplasm for all time points
 def measure_intensities_for_all_timepoints(image_stack, nucleus_masks, cytoplasm_masks):
@@ -69,6 +40,7 @@ def measure_intensities_for_all_timepoints(image_stack, nucleus_masks, cytoplasm
         nucleus_intensities.append(nucleus_intensity)
         cytoplasm_intensities.append(cytoplasm_intensity)
     return nucleus_intensities, cytoplasm_intensities
+
 
 # Function to save intensities to CSV
 def save_intensities_to_csv(nucleus_intensities, cytoplasm_intensities, timepoints, output_csv):

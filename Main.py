@@ -23,13 +23,13 @@ import sys
 # sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
 sys.path.append('/Users/m.wehrens/Documents/git_repos/_UVA/2024_small-projects/2025_analyze_translocation_reporters_Julian/')
 
-from Intensity_measurements import (segment_nucleus, create_cytoplasm_roi, 
+from Functions.Intensity_measurements import (segment_nucleus, create_cytoplasm_roi, 
                                     measure_intensities_for_all_timepoints, 
                                     save_intensities_to_csv)
 
-from Individual_measurements import (segment_and_extract_centroids, measure_cell_intensities, save_individual_intensities_to_csv)
+from Functions.Individual_measurements import (segment_and_extract_centroids, measure_cell_intensities, save_individual_intensities_to_csv)
 
-from Cell_tracker import (extract_centroids, segment_and_extract_centroids, visualize_tracked_centroids)
+from Functions.Discarded.Cell_tracker import (extract_centroids, segment_and_extract_centroids, visualize_tracked_centroids)
 
 ################################################################################
 

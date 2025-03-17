@@ -1,3 +1,11 @@
+################################################################################
+
+# Translocation Reporters analysis script
+
+
+################################################################################
+# import libraries
+
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -8,7 +16,12 @@ import os
 from glob import glob
 import csv
 import sys
-sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
+
+################################################################################
+# import custom libs
+
+# sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
+sys.path.append('/Users/m.wehrens/Documents/git_repos/_UVA/2024_small-projects/2025_analyze_translocation_reporters_Julian/')
 
 from Intensity_measurements import (segment_nucleus, create_cytoplasm_roi, 
                                     measure_intensities_for_all_timepoints, 
@@ -18,11 +31,19 @@ from Individual_measurements import (segment_and_extract_centroids, measure_cell
 
 from Cell_tracker import (extract_centroids, segment_and_extract_centroids, visualize_tracked_centroids)
 
-input_folder = "/Volumes/sils-mc/13776452/Python_scripts/Data_input_test"
-output_folder = "/Volumes/sils-mc/13776452/Python_scripts/Data_output_test"
+################################################################################
+
+# Input and output folders
+input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
+output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
 os.makedirs(output_folder, exist_ok=True)
 
+# loop over tif files in input directory
+# for each file, separately analyze and create a csv output file
 for file_path in glob(os.path.join(input_folder, "*.tif")):
+    # file_path = glob(os.path.join(input_folder, "*.tif"))[0]
+    
+    # read file
     image_stack = tiff.imread(file_path)
     print(f"Processing file: {file_path}")
 
@@ -30,6 +51,7 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     time_index = 0
     original_image = image_stack[:, 0][time_index]
     segmented_mask = segment_nucleus(original_image)
+        # plt.imshow(original_image); plt.show(); 
 
     nucleus_channel = image_stack[:, 1]
     segmented_masks = [segment_nucleus(nucleus_channel[time_index]) for time_index in range(nucleus_channel.shape[0])]

@@ -48,6 +48,9 @@ input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_juli
 output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
 os.makedirs(output_folder, exist_ok=True)
 
+# Channel information
+NUCLEAR_CHANNEL = 1
+
 # loop over tif files in input directory
 # for each file, separately analyze and create a csv output file
 for file_path in glob(os.path.join(input_folder, "*.tif")):
@@ -57,16 +60,24 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     image_stack = tiff.imread(file_path)
     print(f"Processing file: {file_path}")
 
-    num_timepoints, num_channels, height, width = image_stack.shape
-    time_index = 0
-    original_image = image_stack[:, 0][time_index]
-    segmented_mask = segment_nucleus(original_image)
-        # plt.imshow(original_image); plt.show(); 
+    # num_timepoints, num_channels, height, width = image_stack.shape
 
-    nucleus_channel = image_stack[:, 1]
-    segmented_masks = [segment_nucleus(nucleus_channel[time_index]) for time_index in range(nucleus_channel.shape[0])]
+    # segment the nuclei
+    imgstack_nucleus = image_stack[:, NUCLEAR_CHANNEL]
+    segmented_masks = [segment_nucleus(imgstack_nucleus[time_index]) for time_index in range(imgstack_nucleus.shape[0])]
+
+
+    
+    # INSERT TRACKING CODE HERE THAT WILL MAKE THE LABELING CONSISTENT THROUGHOUT THE MASKS
+
+
+    
+    # create the cytoplasmic regions (regions of interest, ROI)
     cytoplasm_rois = [create_cytoplasm_roi(mask, dilation_radius=5) for mask in segmented_masks]
 
+    # analyze the data
+    # TO DO: MAKE THIS A LOOP OVER CUSTOM COLORS
+    # TO DO: MAKE IT OUTPUT BOTH THE MEAN SIGNAL AND SINGLE CELLS
     cyan_channel = image_stack[:, 0]
     nucleus_intensities_cyan, cytoplasm_intensities_cyan = measure_intensities_for_all_timepoints(cyan_channel, segmented_masks, cytoplasm_rois)
 
@@ -76,24 +87,8 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     timepoints = range(len(nucleus_intensities_cyan))
     output_csv = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + "_results.csv")
 
+    # TO DO: MAKE THIS SAVE BOTH COLORS
     save_intensities_to_csv(nucleus_intensities_green, cytoplasm_intensities_green, timepoints, output_csv)
 
-    image_stack = tiff.imread(file_path)
-    print(f"Processing file: {file_path}")
 
-    tracking_data = segment_and_extract_centroids(image_stack)
-    # print(f"Tracking data for {file_path}:", tracking_data)
-
-    #visualize_tracked_centroids(image_stack, tracking_data)
-    cell_intensity_data = measure_cell_intensities(image_stack, tracking_data)
-    # print(f"Intensity data for {file_path}:", cell_intensity_data)
-
-    for label, intensities in cell_intensity_data.items():
-        for frame, (nucleus_intensity, cytoplasm_intensity) in enumerate(zip(intensities["nucleus"], intensities["cytoplasm"])):
-            # print(f"Label {label}, Frame {frame}: Nucleus Intensity = {nucleus_intensity}, Cytoplasm Intensity = {cytoplasm_intensity}")  # Commented out
-            pass
-
-    output_csv = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + "_intensities.csv")
-    save_individual_intensities_to_csv(cell_intensity_data, output_csv)
-    print(f"Intensity data saved to {output_csv}")
-    print(f"Results saved to {output_csv}")
+    

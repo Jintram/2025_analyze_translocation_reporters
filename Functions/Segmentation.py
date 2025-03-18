@@ -62,3 +62,62 @@ def create_cytoplasm_roi(nucleus_mask, dilation_radius=5, margin_radius = 0):
         # plt.imshow(dilated_mask); plt.show(); plt.close()
 
     return dilated_mask
+
+
+def track_nuclei(mask_t, mask_tplus1):
+    # mask_t = segmented_masks_preliminary[0]; mask_tplus1 = segmented_masks_preliminary[1]
+    # problem case:
+    # mask_t = segmented_masks_preliminary[2]; mask_tplus1 = segmented_masks_preliminary[3]
+    
+    ''''
+    label propagation
+    
+    Given two labeled masks, which contain similar segmentations, but one at timepoints t, 
+    and one at timepoint t+1, the goal of this function is to make the labeling consistent 
+    between the masks of the two timepoints.
+
+    The function will take as input two labeled masks, mask_t and mask_tplus1, go over 
+    each of the labels within mask_t, select the corresponding pixels in mask_tplus1, 
+    and determine which label is most often found in those pixels of mask_tplus1.
+    
+    Note 1: this strategy might lead to lineages ending in 0, leaving that object untracked
+    in all subsequent frames.
+    
+    Note 2: a more sophisticated approach would be to calculate an overlap matrix ij between
+    labels i from mask_t and labels j from mask_tplus1, but this would be more computationally
+    expensive, and the result would be the same. (The advantage of that would be to more 
+    easily identify problem cases with multiple overlaps.)
+    '''
+    
+    # obtain non-zero labels from mask_t
+    mask_t_labels = np.unique(mask_t)
+    mask_t_labels = mask_t_labels[mask_t_labels>0]
+    
+    # 
+    mask_tplus1_corrected = np.zeros_like(mask_tplus1)
+    
+    # now for each label check with which label in t+1 they overlap most
+    the_mapping = {}
+    for lbl in mask_t_labels:
+        # lbl=1
+        
+        overlapping_labels = mask_tplus1[mask_t == lbl]
+            # test case
+            # overlapping_labels = np.array([0, 10, 10, 10, 2, 10, 10, 10, 3, 3, 0 , 0, 0, 0, 0, 0, 0])
+        
+        # get the label that's most frequent non-zero value (mode)
+        mode_label = np.bincount(overlapping_labels[overlapping_labels>0]).argmax()
+        
+        # save how labels should be updated
+        the_mapping[mode_label] = lbl
+        
+        
+        # now assing that at the correct position in the updated mask
+        # we have determined mode_label to be the matching label in the t+1 frame
+        # this matches lbl in the frame t. 
+        # so we need to set all positions of the mode_label to the label
+        # consistent with the frame t, ie lbl.
+        if (not mode_label==0):
+            mask_tplus1_corrected[mask_tplus1==mode_label] = lbl
+    
+    return mask_tplus1_corrected

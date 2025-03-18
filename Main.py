@@ -19,6 +19,7 @@ import sys
 
 import pandas as pd
 
+import seaborn as sns
 
 ################################################################################
 # import custom libs
@@ -126,6 +127,45 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
         
     # concatenate all dfs
     df_data_all = pd.concat(df_list)
+
+################################################################################
+# Now create a plot of the signals
+
+# plot the data
+# (fully co-pilot generated suggestion)
+sns.set_theme(style="whitegrid")
+g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
+g.map(sns.lineplot, "Frame", "Intensity_nucleus", marker="o", color="b")
+g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", marker="o", color="r")
+# g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", marker="o", color="g")
+g.set_axis_labels("Time", "Intensity")
+g.add_legend()
+plt.show()
+
+# plot the data
+df_data_all.columns
+sns.set_theme(style="whitegrid")
+g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
+g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data_all.loc[df_data_all['Cell']!='all'], hue='Cell')
+g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", linestyle='--', data=df_data_all.loc[df_data_all['Cell']!='all'], hue='Cell')
+g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data_all.loc[df_data_all['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
+g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", data=df_data_all.loc[df_data_all['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2, linestyle='--')
+# g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", marker="o", color="g")
+g.set_axis_labels("Time", "Intensity")
+g.add_legend()
+plt.show()
+
+# plot the data
+df_data_all.columns
+sns.set_theme(style="whitegrid")
+g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
+g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
+g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']!='all'], hue='Cell')
+g.set_axis_labels("Time", "Intensity")
+g.add_legend()
+plt.show()
+
+
 
 
 

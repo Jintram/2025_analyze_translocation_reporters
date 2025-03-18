@@ -86,7 +86,7 @@ def plot_illustration_tracking(frame_t, frame_tplus1):
     plt.close('all')
     
 
-def plot_labels_framesX(labeled_masks, range_start=0, range_end=10, text_xoffset=20, output_folder=None, file_name=None):
+def plot_labels_framesX(labeled_masks, range_start=0, range_end=10, text_xoffset=20, output_folder=None, file_name=None, suffix=''):
     # labeled_masks=segmented_masks_tracked; range_start=1; range_end=3; text_xoffset=50
     '''
     Use jet-color coded imshow and text labels to 
@@ -123,6 +123,6 @@ def plot_labels_framesX(labeled_masks, range_start=0, range_end=10, text_xoffset
         plt.show()
         plt.close(fig)
     else:
-        plt.savefig(output_folder+file_name+'.pdf', dpi=300, bbox_inches='tight')
+        plt.savefig(output_folder+file_name+suffix+'.pdf', dpi=300, bbox_inches='tight')
         plt.close(fig)
     

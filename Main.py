@@ -17,6 +17,9 @@ from glob import glob
 import csv
 import sys
 
+import pandas as pd
+
+
 ################################################################################
 # import custom libs
 
@@ -56,7 +59,8 @@ output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-t
 os.makedirs(output_folder, exist_ok=True)
 
 # Channel information
-NUCLEAR_CHANNEL = 1
+MAPPING_CHANNELS = {'nucleus':0, 'ERK':1, 'PKA':2}
+nuclear_channel = MAPPING_CHANNELS['nucleus']
 
 # loop over tif files in input directory
 # for each file, separately analyze and create a csv output file
@@ -73,39 +77,57 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     # num_timepoints, num_channels, height, width = image_stack.shape
 
     # segment the nuclei
-    imgstack_nucleus = image_stack[:, NUCLEAR_CHANNEL]
-    segmented_masks_preliminary = [TRseg.segment_nucleus(imgstack_nucleus[time_index]) for time_index in range(imgstack_nucleus.shape[0])]
+    imgstack_nucleus = image_stack[:, nuclear_channel]
+    nucleus_masks_preliminary = [TRseg.segment_nucleus(imgstack_nucleus[time_index]) for time_index in range(imgstack_nucleus.shape[0])]
 
     # For frames t>0, make the labeling consistent with frame t=0
-    # The updated labeling is stored in segmented_masks_tracked.
+    # The updated labeling is stored in nucleus_masks_tracked.
     # To create new labels for a frame, updated information is necessary,
-    # therefor, each frm+1 frame is constructed based segmented_masks_tracked[frm]
-    # and segmented_masks_preliminary[frm+1].
-    segmented_masks_tracked = [segmented_masks_preliminary[0]]
-    for frm in range(len(segmented_masks_preliminary)-1):
-        label_maskplus1 = TRseg.track_nuclei(segmented_masks_tracked[frm], segmented_masks_preliminary[frm+1])
-        segmented_masks_tracked.extend([label_maskplus1])
+    # therefor, each frm+1 frame is constructed based nucleus_masks_tracked[frm]
+    # and nucleus_masks_preliminary[frm+1].
+    nucleus_masks_tracked = [nucleus_masks_preliminary[0]]
+    for frm in range(len(nucleus_masks_preliminary)-1):
+        label_maskplus1 = TRseg.track_nuclei(nucleus_masks_tracked[frm], nucleus_masks_preliminary[frm+1])
+        nucleus_masks_tracked.extend([label_maskplus1])
+    # Plot the nuclear segmentation and tracking of the first N frames
+    TRplt.plot_labels_framesX(nucleus_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_nuclei')
     
-    # Plot the tracking of the first N frames
-    TRplt.plot_labels_framesX(segmented_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name)
-    
-    # create the cytoplasmic regions (regions of interest, ROI)
-    cytoplasm_rois = [TRseg.create_cytoplasm_roi(mask, dilation_radius=5) for mask in segmented_masks_tracked]
+    # Create the cytoplasmic regions (regions of interest, ROI)
+    cytoplasm_masks_tracked = [TRseg.create_cytoplasm_roi(mask, dilation_radius=5) for mask in nucleus_masks_tracked] # tracked in is tracked out :)
+    # Plot the rings of the first N frames
+    TRplt.plot_labels_framesX(cytoplasm_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_cytorings')
 
-    # analyze the data
-    # TO DO: MAKE THIS A LOOP OVER CUSTOM COLORS
-    # TO DO: MAKE IT OUTPUT BOTH THE MEAN SIGNAL AND SINGLE CELLS
-    cyan_channel = image_stack[:, 0]
-    nucleus_intensities_cyan, cytoplasm_intensities_cyan = measure_intensities_for_all_timepoints(cyan_channel, segmented_masks_tracked, cytoplasm_rois)
+    # TO DO: DO WE WANT SOME KIND OF BACKGROUND CORRECTION?
 
-    green_channel = image_stack[:, 2]
-    nucleus_intensities_green, cytoplasm_intensities_green = measure_intensities_for_all_timepoints(green_channel, segmented_masks_tracked, cytoplasm_rois)
+    # Now combine the segmentation with the intensity signals to calculate nuclear and cytoplasmic signals per cell
+    # nucleus_masks_tracked, cytoplasm_masks_tracked, image_stack_current
+    df_list={}
+    for thekey in list(MAPPING_CHANNELS.keys()):        
+        # thekey=list(MAPPING_CHANNELS.keys())[1]
+        
+        if thekey == 'nucleus': continue
+        
+        image_stack_intensity = image_stack[:, MAPPING_CHANNELS[thekey]]
+        
+        df_current = \
+            TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity, nucleus_masks_tracked, cytoplasm_masks_tracked)
+        
+        # Calculate nucleus/cyto ratio
+        df_current['Ratio_nucleus_div_cytoplasm'] = df_current['Intensity_nucleus']/df_current['Intensity_cytoplasm']
+        # Add key to the df
+        df_current['Key'] = thekey
+        
+        # export current df
+        df_current.to_csv(os.path.join(output_folder, f"{file_name}_{thekey}_results.csv"), index=False)
+        df_current.to_excel(os.path.join(output_folder, f"{file_name}_{thekey}_results.xlsx"), index=False)
+        
+        # save current df to list
+        df_list[thekey] = df_current
+        
+    # concatenate all dfs
+    df_data_all = pd.concat(df_list)
 
-    timepoints = range(len(nucleus_intensities_cyan))
-    output_csv = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + "_results.csv")
 
-    # TO DO: MAKE THIS SAVE BOTH COLORS
-    save_intensities_to_csv(nucleus_intensities_green, cytoplasm_intensities_green, timepoints, output_csv)
 
 
     

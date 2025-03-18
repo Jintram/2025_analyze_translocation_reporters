@@ -11,7 +11,7 @@ from glob import glob
 import csv
 from skimage.measure import label
 
-
+import pandas as pd
 
 
 # Function to visualize a specific time point and channel
@@ -26,20 +26,51 @@ def visualize_timepoint(stack, time_index, channel_index):
 
 # Function to measure mean intensity in a given mask (nucleus or cytoplasm)
 def measure_intensity(image, mask):
-    return np.mean(image[mask == 1])
+    return np.mean(image[mask])
 
+def thedata_rowasdict(time_index, cell_lbl, nucleus_intensity, cytoplasm_intensity):
+    
+    return {
+        "Frame": time_index,
+        "Cell": str(cell_lbl),
+        "Intensity_nucleus": nucleus_intensity,
+        "Intensity_cytoplasm": cytoplasm_intensity,
+        }
+    
 
 # Function to measure intensities for both nucleus and cytoplasm for all time points
-def measure_intensities_for_all_timepoints(image_stack, nucleus_masks, cytoplasm_masks):
-    nucleus_intensities = []
-    cytoplasm_intensities = []
-    for time_index in range(image_stack.shape[0]):
-        current_image = image_stack[time_index]
-        nucleus_intensity = measure_intensity(current_image, nucleus_masks[time_index])
-        cytoplasm_intensity = measure_intensity(current_image, cytoplasm_masks[time_index])
-        nucleus_intensities.append(nucleus_intensity)
-        cytoplasm_intensities.append(cytoplasm_intensity)
-    return nucleus_intensities, cytoplasm_intensities
+def measure_intensities_for_all_timepoints(image_stack_intensity, nucleus_masks_tracked, cytoplasm_masks_tracked):
+    
+    # A list to store the data
+    # Each entry will be a dictionary (see function thedata_rowasdict above)
+    # {'Frame': .., 'Cell': .., 'Intensity_nucleus': .., 'Intensity_cytoplasm': ..}
+    thedata = []
+    
+    # Go over frames
+    for time_index in range(image_stack_intensity.shape[0]):
+        
+        current_image = image_stack_intensity[time_index]
+        
+        # Calculate the mean intensities per cell                
+        for cell_lbl in range(1, np.max(nucleus_masks_tracked)+1):
+            
+            # Calculate mean intensity for this cell
+            nucleus_intensity = measure_intensity(current_image, nucleus_masks_tracked[time_index]==cell_lbl)
+            cytoplasm_intensity = measure_intensity(current_image, cytoplasm_masks_tracked[time_index]==cell_lbl)        
+            
+            # Add information to list
+            thedata.append(thedata_rowasdict(time_index, cell_lbl, nucleus_intensity, cytoplasm_intensity))
+            
+        # Also calculate the overall mean intensities, add to list
+        thedata.append(thedata_rowasdict(time_index, 'all', 
+                                         measure_intensity(current_image, nucleus_masks_tracked[time_index]>0), 
+                                         measure_intensity(current_image, cytoplasm_masks_tracked[time_index]>0)))
+
+    # Convert to dataframe    
+    df_intensities = pd.DataFrame(thedata)
+    
+    return df_intensities
+
 
 
 # Function to save intensities to CSV

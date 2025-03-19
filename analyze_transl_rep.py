@@ -41,14 +41,33 @@ import Functions.Plotting as TRplt
 # plt.ion(); plt.ioff()
 # plt.style.use("default")
 
+# Read in settings from command
 if (len(sys.argv) > 1):
     
+    input_folder  = sys.argv[1]
+    output_folder = sys.argv[2]
+    AUTO_BACKGROUND_CORRECTION = bool(int(sys.argv[3]))
     
+    # loop over remaining arguments
+    MAPPING_CHANNELS = {}
+    for idx in range(4, len(sys.argv)-1, 2):
+        # print(sys.argv[idx], sys.argv[idx+1])
+        MAPPING_CHANNELS[sys.argv[idx]] = int(sys.argv[idx+1])
+    
+    print(MAPPING_CHANNELS)
 
 else:
-    # revert to default settings
-    print('Please call this script ')
-    
+
+    print('='*80)
+    print('Please call this script as follows: \n')
+    print('python analyze_transl_rep.py /input/folder/path/ /output/folder/path/ 0|1 nucleus 0 name1 1 name2 2\n')
+    print('Where respectively folders can be customized, 0 or 1 is chosen to indicate auto background correction, ')
+    print("and 'nucleus 0 ..' indicates in which channel nucleus and custom named channels to analyze can be found.\n")
+    print('Exiting')
+    print('='*80)
+    sys.exit()
+
+os.makedirs(output_folder, exist_ok=True)
     
 if False:
     
@@ -56,8 +75,7 @@ if False:
     input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
     # input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/testdata/"
     output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
-    os.makedirs(output_folder, exist_ok=True)
-
+    
     # SETTINGS
     MAPPING_CHANNELS = {'nucleus':0, 'ERK':1, 'PKA':2}
     nuclear_channel = MAPPING_CHANNELS['nucleus']

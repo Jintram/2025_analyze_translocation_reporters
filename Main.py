@@ -40,6 +40,10 @@ import Functions.Segmentation as TRseg
 import Functions.Intensity_measurements as TRmeas
     # import importlib; importlib.reload(TRmeas)
 
+import Functions.Image_corrections as TRcorrect
+    # import importlib; importlib.reload(TRcorrect)
+
+
 import Functions.Plotting as TRplt
     # import importlib; importlib.reload(TRplt)
 
@@ -53,6 +57,7 @@ import Functions.Plotting as TRplt
 plt.ion()
 # Exit interactive mode
 plt.ioff()
+# plt.style.use("default")
 
 # Input and output folders
 input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
@@ -113,8 +118,13 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
         
         image_stack_intensity = image_stack[:, MAPPING_CHANNELS[thekey]]
         
+        # Background correction
+        image_stack_intensity_corrected = np.array([TRcorrect.correct_background(img) for img in image_stack_intensity])
+            # plt.imshow(image_stack_intensity[0]); plt.title('Not corrected'); plt.show(); plt.close()
+            # plt.imshow(image_stack_intensity_corrected[0]); plt.title('Corrected'); plt.show(); plt.close()
+        
         df_current = \
-            TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity, nucleus_masks_tracked, cytoplasm_masks_tracked)
+            TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity_corrected, nucleus_masks_tracked, cytoplasm_masks_tracked)
         
         # Calculate nucleus/cyto ratio
         df_current['Ratio_nucleus_div_cytoplasm'] = df_current['Intensity_nucleus']/df_current['Intensity_cytoplasm']

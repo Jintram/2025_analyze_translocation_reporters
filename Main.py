@@ -2,6 +2,8 @@
 
 # Translocation Reporters analysis script
 
+# Expected tiff file input such that:
+# image_stack.shape = num_timepoints, num_channels, height, width 
 
 ################################################################################
 # import libraries
@@ -51,7 +53,7 @@ import Functions.Plotting as TRplt
 # from Functions.Individual_measurements import (segment_and_extract_centroids, measure_cell_intensities, save_individual_intensities_to_csv)
 
 ################################################################################
-
+# Settings
 
 # Enable interactive mode
 plt.ion()
@@ -72,23 +74,15 @@ AUTO_BACKGROUND_CORRECTION = False # only use this if there are areas in the pic
 
 # TO DO: THE LOOP BELOW IS TOO LONG, PERHAPS WE SHOULD SPLIT THE CODE INTO FUNCTIONS
 
-# loop over tif files in input directory
-# for each file, separately analyze and create a csv output file
-df_list=[]
-for file_path in glob(os.path.join(input_folder, "*.tif")):
-    # file_path = glob(os.path.join(input_folder, "*.tif"))[0]
-    
-    # get the filename, without the extension
-    file_name = os.path.splitext(os.path.basename(file_path))[0]
-    
-    # read file
-    image_stack = tiff.imread(file_path)
-    print(f"Processing file: {file_path}")
+######################################################################
+# Functions that constitute the loop below
+# More sophisticated functions are in other files
 
-    # num_timepoints, num_channels, height, width = image_stack.shape
+def segment_and_track_nuclei(imgstack_nucleus, output_folder, file_name):
+    # imgstack_nucleus = image_stack[:, nuclear_channel]
+    # Note that some parameters below are defined implicitly by global values
 
     # segment the nuclei
-    imgstack_nucleus = image_stack[:, nuclear_channel]
     nucleus_masks_preliminary = [TRseg.segment_nucleus(imgstack_nucleus[time_index]) for time_index in range(imgstack_nucleus.shape[0])]
 
     # For frames t>0, make the labeling consistent with frame t=0
@@ -103,10 +97,35 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     # Plot the nuclear segmentation and tracking of the first N frames
     TRplt.plot_labels_framesX(nucleus_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_nuclei')
     
-    # Create the cytoplasmic regions (regions of interest, ROI)
-    cytoplasm_masks_tracked = [TRseg.create_cytoplasm_roi(mask, dilation_radius=5) for mask in nucleus_masks_tracked] # tracked in is tracked out :)
-    # Plot the rings of the first N frames
+    return np.array(nucleus_masks_tracked), np.array(nucleus_masks_preliminary)
+
+def create_cytoplasm_masks(nucleus_masks_tracked, output_folder, file_name, dilation_radius=5, margin_radius=0):
+    
+    cytoplasm_masks_tracked = [TRseg.create_cytoplasm_roi(mask, dilation_radius=dilation_radius, margin_radius=margin_radius) for mask in nucleus_masks_tracked] # tracked in is tracked out :)
     TRplt.plot_labels_framesX(cytoplasm_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_cytorings')
+
+    return np.array(cytoplasm_masks_tracked)
+
+######################################################################
+
+# loop over tif files in input directory
+# for each file, separately analyze and create a csv output file
+df_list=[]
+for file_path in glob(os.path.join(input_folder, "*.tif")):
+    # file_path = glob(os.path.join(input_folder, "*.tif"))[0]
+    
+    # get the filename, without the extension
+    file_name = os.path.splitext(os.path.basename(file_path))[0]
+    
+    # read file
+    image_stack = tiff.imread(file_path)
+    print(f"Processing file: {file_path}")
+
+    # Segment the nuclei and track them such that labels are consistent throughout segmentation
+    nucleus_masks_tracked, nucleus_masks_preliminary = segment_and_track_nuclei(image_stack[:, nuclear_channel], output_folder, file_name)
+
+    # Create the cytoplasmic regions (regions of interest, ROI), and plot the rings of the first N frames
+    cytoplasm_masks_tracked = create_cytoplasm_masks(nucleus_masks_tracked, output_folder, file_name, dilation_radius=5, margin_radius=0)
 
     # Now combine the segmentation with the intensity signals to calculate nuclear and cytoplasmic signals per cell
     # nucleus_masks_tracked, cytoplasm_masks_tracked, image_stack_current    
@@ -146,8 +165,8 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
 df_data_all = pd.concat(df_list, ignore_index=True)
 # df_data_all = pd.concat(df_list[:2], ignore_index=True)
 # Save those too
-df_data_all.to_csv(os.path.join(output_folder, f"{file_name}_ALL_results.csv"), index=False)
-df_data_all.to_excel(os.path.join(output_folder, f"{file_name}_ALL_results.xlsx"), index=False)
+df_data_all.to_csv(os.path.join(output_folder, f"ALL_results.csv"), index=False)
+df_data_all.to_excel(os.path.join(output_folder, f"ALL_results.xlsx"), index=False)
 
 ################################################################################
 # Now create a plot of the signals

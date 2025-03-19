@@ -36,6 +36,7 @@ def plot_nuclear_seg(segmented_masks, imgstack_nucleus):
     plt.show()
     
 def plot_nuclear_segmove(segmented_masks, imgstack_nucleus):
+    # segmented_masks = nucleus_masks_preliminary; imgstack_nucleus = image_stack[:, nuclear_channel]
     '''
     Plots the segmentation mask outlines on top of each other
     for the starting time frames. Color coded for time using

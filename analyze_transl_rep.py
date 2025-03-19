@@ -44,17 +44,22 @@ import Functions.Plotting as TRplt
 # Read in settings from command
 if (len(sys.argv) > 1):
     
+    # automatically load settings when called from command line
+    # note that you can also manually set these parameters and 
+    # execute parts of the script manually
+    
     input_folder  = sys.argv[1]
     output_folder = sys.argv[2]
     AUTO_BACKGROUND_CORRECTION = bool(int(sys.argv[3]))
     
-    # loop over remaining arguments
+    # loop over remaining arguments, which map the channels
+    # e.g. nucleus 0 PKA 1 indicates nuclear channel is 0 and PKA chanenl is 1
     MAPPING_CHANNELS = {}
     for idx in range(4, len(sys.argv)-1, 2):
         # print(sys.argv[idx], sys.argv[idx+1])
         MAPPING_CHANNELS[sys.argv[idx]] = int(sys.argv[idx+1])
     
-    print(MAPPING_CHANNELS)
+    print('Starting script')
 
 else:
 
@@ -66,8 +71,6 @@ else:
     print('Exiting')
     print('='*80)
     sys.exit()
-
-os.makedirs(output_folder, exist_ok=True)
     
 if False:
     
@@ -81,6 +84,10 @@ if False:
     nuclear_channel = MAPPING_CHANNELS['nucleus']
     AUTO_BACKGROUND_CORRECTION = False # only use this if there are areas in the picture with no signal
 
+
+
+os.makedirs(output_folder, exist_ok=True)
+nuclear_channel = MAPPING_CHANNELS['nucleus']
 
 ######################################################################
 # Functions that constitute the loop below

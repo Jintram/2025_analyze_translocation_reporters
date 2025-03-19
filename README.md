@@ -6,7 +6,7 @@ Script can be called as follows from the command line:
 
 ```bash
 input_folder="/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Thrombine/"
-output_folder="/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
+output_folder="/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/Thrombine/"
 auto_correct_bg=1
 
 python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucleus 0 ERK 1 PKA 2

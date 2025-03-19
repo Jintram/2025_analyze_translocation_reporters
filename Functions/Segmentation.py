@@ -65,9 +65,9 @@ def create_cytoplasm_roi(nucleus_mask, dilation_radius=5, margin_radius = 0):
 
 
 def track_nuclei(mask_t, mask_tplus1):
-    # mask_t = segmented_masks_preliminary[0]; mask_tplus1 = segmented_masks_preliminary[1]
+    # mask_t = nucleus_masks_preliminary[0]; mask_tplus1 = nucleus_masks_preliminary[1]
     # problem case:
-    # mask_t = segmented_masks_preliminary[2]; mask_tplus1 = segmented_masks_preliminary[3]
+    # mask_t = nucleus_masks_preliminary[2]; mask_tplus1 = nucleus_masks_preliminary[3]
     
     ''''
     label propagation
@@ -99,19 +99,22 @@ def track_nuclei(mask_t, mask_tplus1):
     # now for each label check with which label in t+1 they overlap most
     the_mapping = {}
     for lbl in mask_t_labels:
-        # lbl=1
+        # lbl=2
         
         overlapping_labels = mask_tplus1[mask_t == lbl]
             # test case
-            # overlapping_labels = np.array([0, 10, 10, 10, 2, 10, 10, 10, 3, 3, 0 , 0, 0, 0, 0, 0, 0])
-        
-        # get the label that's most frequent non-zero value (mode)
-        mode_label = np.bincount(overlapping_labels[overlapping_labels>0]).argmax()
-        
-        # save how labels should be updated
-        the_mapping[mode_label] = lbl
-        
-        
+            # overlapping_labels = np.array([0, 10, 10, 10, 2, 10, 10, 10, 3, 3, 0 , 0, 0, 0, 0, 0, 0])        
+            
+        # get the label that's most frequent non-zero value (mode)            
+        # first, determine the frequency of the labels in the corresponding area in the previous frame
+        label_frequency = np.bincount(overlapping_labels)
+        # if non-zero values found, take the most frequent value (mode)
+        if len(label_frequency)>1:
+            mode_label = label_frequency[1:].argmax()+1 # remove 0; hence also +1
+        # if no non-zero labels are found, make it zero (will be ignored later)
+        else:
+            mode_label = 0
+                
         # now assing that at the correct position in the updated mask
         # we have determined mode_label to be the matching label in the t+1 frame
         # this matches lbl in the frame t. 
@@ -119,5 +122,8 @@ def track_nuclei(mask_t, mask_tplus1):
         # consistent with the frame t, ie lbl.
         if (not mode_label==0):
             mask_tplus1_corrected[mask_tplus1==mode_label] = lbl
+            
+            # save how labels are updated
+            the_mapping[mode_label] = lbl # currently for debugging, could be used also
     
-    return mask_tplus1_corrected
+    return mask_tplus1_corrected, the_mapping

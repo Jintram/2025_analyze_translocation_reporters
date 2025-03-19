@@ -7,6 +7,10 @@ from skimage.measure import regionprops
 
 import numpy as np
 
+import seaborn as sns
+
+import os
+
 # generate a jet colormap, but make the first color white
 my_jet_colors = np.concatenate([[[1, 1, 1, 1]], plt.cm.jet(np.linspace(0, 1, 256))])
 jet_custom = ListedColormap(my_jet_colors)
@@ -141,3 +145,41 @@ def plot_labels_framesX(labeled_masks, range_start=0, range_end=10, text_xoffset
         plt.savefig(output_folder+file_name+suffix+'.pdf', dpi=300, bbox_inches='tight')
         plt.close(fig)
     
+################################################################################
+# 
+
+def plot_intensity_nuc_cyto(df_data, output_folder, file_name):
+    
+    sns.set_theme(style="whitegrid")
+    g = sns.FacetGrid(df_data, col="Key", col_wrap=2, height=4, sharey=False)
+    # Plot individual cells with hue='Cell'
+    _=g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data.loc[df_data['Cell'] != 'all'], hue='Cell', legend=False)
+    _=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", linestyle='--', data=df_data.loc[df_data['Cell'] != 'all'], hue='Cell', legend=False)
+    # Plot the average (black lines)
+    _=g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data.loc[df_data['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, label='Average Nucleus')
+    _=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", data=df_data.loc[df_data['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, linestyle='--', label='Average Cytoplasm')
+    # Cosmetics
+    g.set_axis_labels("Time", "Signal intensity")
+    g.add_legend()
+    # Save
+    # plt.tight_layout()
+    g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-separate.pdf"), dpi=300, bbox_inches='tight')
+    plt.close(g.figure)
+    
+    print('Saved plot to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-separate.pdf"))
+
+
+def plot_intensity_ratio(df_data, output_folder, file_name):
+    
+    sns.set_theme(style="whitegrid")
+    g = sns.FacetGrid(df_data, col="Key", col_wrap=2, height=4, sharey=False)
+    g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
+    g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']!='all'], hue='Cell')
+    g.set_axis_labels("Time", "Signal ratio nucleus/cytoplasm")
+    g.add_legend()
+    # Save
+    # plt.tight_layout()
+    g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"), dpi=300, bbox_inches='tight')
+    plt.close(g.figure)
+    
+    print('Plot saved to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"))

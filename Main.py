@@ -132,6 +132,7 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
         
 # concatenate all dfs
 df_data_all = pd.concat(df_list, ignore_index=True)
+# df_data_all = pd.concat(df_list[:2], ignore_index=True)
 # Save those too
 df_data_all.to_csv(os.path.join(output_folder, f"{file_name}_ALL_results.csv"), index=False)
 df_data_all.to_excel(os.path.join(output_folder, f"{file_name}_ALL_results.xlsx"), index=False)
@@ -145,39 +146,11 @@ df_data_all.to_excel(os.path.join(output_folder, f"{file_name}_ALL_results.xlsx"
 
 # TO DO: CONVERT THE BELOW CODE TO FUNCTIONS
 
-# plot the data
-# df_data_all.columns
-sns.set_theme(style="whitegrid")
-g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
-# Plot individual cells with hue='Cell'
-_=g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data_all.loc[df_data_all['Cell'] != 'all'], hue='Cell', legend=False)
-_=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", linestyle='--', data=df_data_all.loc[df_data_all['Cell'] != 'all'], hue='Cell', legend=False)
-# Plot the average (black lines)
-_=g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data_all.loc[df_data_all['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, label='Average Nucleus')
-_=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", data=df_data_all.loc[df_data_all['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, linestyle='--', label='Average Cytoplasm')
-# Cosmetics
-g.set_axis_labels("Time", "Signal intensity")
-g.add_legend()
-# Save
-# plt.tight_layout()
-g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-separate.pdf"), dpi=300, bbox_inches='tight')
-plt.close(g.figure)
 
-
-# plot the data
-# df_data_all.columns
-sns.set_theme(style="whitegrid")
-g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
-g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
-g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']!='all'], hue='Cell')
-g.set_axis_labels("Time", "Signal ratio nucleus/cytoplasm")
-g.add_legend()
-# Save
-# plt.tight_layout()
-g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"), dpi=300, bbox_inches='tight')
-plt.close(g.figure)
-
-
+for CURRENT_SAMPLE in np.unique(df_data_all['Sample']):
+    
+    TRplt.plot_intensity_nuc_cyto(df_data_all.loc[df_data_all['Sample']==CURRENT_SAMPLE, ], output_folder, CURRENT_SAMPLE)
+    TRplt.plot_intensity_ratio(df_data_all.loc[df_data_all['Sample']==CURRENT_SAMPLE, ], output_folder, CURRENT_SAMPLE)
 
 
 

@@ -65,9 +65,10 @@ input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_juli
 output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
 os.makedirs(output_folder, exist_ok=True)
 
-# Channel information
+# SETTINGS
 MAPPING_CHANNELS = {'nucleus':0, 'ERK':1, 'PKA':2}
 nuclear_channel = MAPPING_CHANNELS['nucleus']
+AUTO_BACKGROUND_CORRECTION = False # only use this if there are areas in the picture with no signal
 
 # TO DO: THE LOOP BELOW IS TOO LONG, PERHAPS WE SHOULD SPLIT THE CODE INTO FUNCTIONS
 
@@ -107,8 +108,6 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     # Plot the rings of the first N frames
     TRplt.plot_labels_framesX(cytoplasm_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_cytorings')
 
-    # TO DO: DO WE WANT SOME KIND OF BACKGROUND CORRECTION?
-
     # Now combine the segmentation with the intensity signals to calculate nuclear and cytoplasmic signals per cell
     # nucleus_masks_tracked, cytoplasm_masks_tracked, image_stack_current    
     for thekey in list(MAPPING_CHANNELS.keys()):        
@@ -118,11 +117,14 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
         
         image_stack_intensity = image_stack[:, MAPPING_CHANNELS[thekey]]
         
-        # Background correction
-        image_stack_intensity_corrected = np.array([TRcorrect.correct_background(img) for img in image_stack_intensity])
-            # plt.imshow(image_stack_intensity[0]); plt.title('Not corrected'); plt.show(); plt.close()
-            # plt.imshow(image_stack_intensity_corrected[0]); plt.title('Corrected'); plt.show(); plt.close()
-        
+        # Optional, background correction
+        if AUTO_BACKGROUND_CORRECTION:
+            image_stack_intensity_corrected = np.array([TRcorrect.correct_background(img) for img in image_stack_intensity])
+                # plt.imshow(image_stack_intensity[0]); plt.title('Not corrected'); plt.show(); plt.close()
+                # plt.imshow(image_stack_intensity_corrected[0]); plt.title('Corrected'); plt.show(); plt.close()
+        else:
+            image_stack_intensity_corrected = image_stack_intensity
+            
         df_current = \
             TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity_corrected, nucleus_masks_tracked, cytoplasm_masks_tracked)
         

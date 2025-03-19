@@ -56,6 +56,7 @@ plt.ioff()
 
 # Input and output folders
 input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
+# input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/testdata/"
 output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
 os.makedirs(output_folder, exist_ok=True)
 
@@ -91,7 +92,7 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     # and nucleus_masks_preliminary[frm+1].
     nucleus_masks_tracked = [nucleus_masks_preliminary[0]]
     for frm in range(len(nucleus_masks_preliminary)-1):
-        label_maskplus1 = TRseg.track_nuclei(nucleus_masks_tracked[frm], nucleus_masks_preliminary[frm+1])
+        label_maskplus1, _ = TRseg.track_nuclei(nucleus_masks_tracked[frm], nucleus_masks_preliminary[frm+1])
         nucleus_masks_tracked.extend([label_maskplus1])
     # Plot the nuclear segmentation and tracking of the first N frames
     TRplt.plot_labels_framesX(nucleus_masks_tracked, range_start=0, range_end=12, text_xoffset=50, output_folder=output_folder, file_name=file_name, suffix='_nuclei')
@@ -154,7 +155,8 @@ _=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", linestyle='--', data=df_da
 # Plot the average (black lines)
 _=g.map(sns.lineplot, "Frame", "Intensity_nucleus", data=df_data_all.loc[df_data_all['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, label='Average Nucleus')
 _=g.map(sns.lineplot, "Frame", "Intensity_cytoplasm", data=df_data_all.loc[df_data_all['Cell'] == 'all'], color='black', units='Cell', estimator=None, linewidth=2, linestyle='--', label='Average Cytoplasm')
-# Add legend 
+# Cosmetics
+g.set_axis_labels("Time", "Signal intensity")
 g.add_legend()
 # Save
 # plt.tight_layout()
@@ -168,7 +170,7 @@ sns.set_theme(style="whitegrid")
 g = sns.FacetGrid(df_data_all, col="Key", col_wrap=2, height=4, sharey=False)
 g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
 g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data_all.loc[df_data_all['Cell']!='all'], hue='Cell')
-g.set_axis_labels("Time", "Intensity")
+g.set_axis_labels("Time", "Signal ratio nucleus/cytoplasm")
 g.add_legend()
 # Save
 # plt.tight_layout()

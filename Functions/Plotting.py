@@ -36,6 +36,7 @@ def plot_nuclear_seg(segmented_masks, imgstack_nucleus):
     plt.show()
     
 def plot_nuclear_segmove(segmented_masks, imgstack_nucleus):
+    # segmented_masks = nucleus_masks_preliminary; imgstack_nucleus = image_stack[:, nuclear_channel]
     '''
     Plots the segmentation mask outlines on top of each other
     for the starting time frames. Color coded for time using
@@ -167,11 +168,11 @@ def plot_intensity_nuc_cyto(df_data, output_folder, file_name):
     plt.close(g.figure)
     
     print('Saved plot to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-separate.pdf"))
-
+    plt.style.use("default") # revert style to default for other plots
 
 def plot_intensity_ratio(df_data, output_folder, file_name):
     
-    sns.set_theme(style="whitegrid")
+    sns.set_theme(style="whitegrid"); 
     g = sns.FacetGrid(df_data, col="Key", col_wrap=2, height=4, sharey=False)
     g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
     g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']!='all'], hue='Cell')
@@ -180,6 +181,7 @@ def plot_intensity_ratio(df_data, output_folder, file_name):
     # Save
     # plt.tight_layout()
     g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"), dpi=300, bbox_inches='tight')
-    plt.close(g.figure)
+    plt.close(g.figure)    
     
     print('Plot saved to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"))
+    plt.style.use("default") # revert style to default for other plots

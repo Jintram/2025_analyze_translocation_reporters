@@ -13,6 +13,7 @@ from skimage.measure import label
 
 
 def segment_nucleus(image, min_size_objects=30,  area_threshold_holes=50, footprint_opening = 2):
+    # image = imgstack_nucleus[1]; min_size_objects=30;  area_threshold_holes=50; footprint_opening = 2
     '''
     Segment an image with nuclei based on simple Otsu thresholding.
     Make small improvements to the image by removing small objects and holes, and opening.
@@ -22,6 +23,7 @@ def segment_nucleus(image, min_size_objects=30,  area_threshold_holes=50, footpr
     # Perform thresholding
     thresh = threshold_otsu(image)
     binary_mask = image > thresh
+        # plt.imshow(label(binary_mask), cmap='jet'); plt.show(); plt.close()
     
     # Remove small objects and holes
     clean_mask = remove_small_objects(binary_mask, min_size=min_size_objects)
@@ -32,6 +34,7 @@ def segment_nucleus(image, min_size_objects=30,  area_threshold_holes=50, footpr
     
     # Label the mask to assign unique labels to each nucleus
     labeled_mask = label(opened_mask)
+        # plt.imshow(labeled_mask, cmap='jet'); plt.show(); plt.close()
     
     return labeled_mask
 
@@ -93,7 +96,7 @@ def track_nuclei(mask_t, mask_tplus1):
     mask_t_labels = np.unique(mask_t)
     mask_t_labels = mask_t_labels[mask_t_labels>0]
     
-    # 
+    # create a new label mask in which to store each of the corrected labeled regions
     mask_tplus1_corrected = np.zeros_like(mask_tplus1)
     
     # now for each label check with which label in t+1 they overlap most

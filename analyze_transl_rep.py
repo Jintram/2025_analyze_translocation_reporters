@@ -141,8 +141,8 @@ def calculate_intensity_values_to_df(MAPPING_CHANNELS, thekey, image_stack, nucl
     df_current = \
         TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity_corrected, nucleus_masks_tracked, cytoplasm_masks_tracked)
     
-    # Calculate nucleus/cyto ratio
-    df_current['Ratio_nucleus_div_cytoplasm'] = df_current['Intensity_nucleus']/df_current['Intensity_cytoplasm']
+    # Calculate cyto/nucleus ratio
+    df_current['Ratio_cytoplasm_div_nucleus'] = df_current['Intensity_cytoplasm']/df_current['Intensity_nucleus']
     # Add key to the df
     df_current['Key'] = thekey
     # Add sample filename to df

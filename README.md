@@ -53,7 +53,8 @@ python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucle
 ## Example output plot
 
 
-![Cytoplasm/Nucleus Ratio Plot](images/example_plot.png)
+
+![Cytoplasm/Nucleus Ratio Plot](Images/PLOT_ERK_example_Intensity_plot_cyto-nuc-ratio.png)
 
 
 

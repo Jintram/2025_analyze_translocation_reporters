@@ -50,10 +50,12 @@ python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucle
 
 
 
-## Example output
+## Example output plot
 
 
+![Cytoplasm/Nucleus Ratio Plot](images/example_plot.png)
 
 
 
  
+

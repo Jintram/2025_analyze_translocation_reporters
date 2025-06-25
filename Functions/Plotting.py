@@ -1,5 +1,3 @@
-
-
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
@@ -174,14 +172,14 @@ def plot_intensity_ratio(df_data, output_folder, file_name):
     
     sns.set_theme(style="whitegrid"); 
     g = sns.FacetGrid(df_data, col="Key", col_wrap=2, height=4, sharey=False)
-    g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
-    g.map(sns.lineplot, "Frame", "Ratio_nucleus_div_cytoplasm", data=df_data.loc[df_data['Cell']!='all'], hue='Cell')
-    g.set_axis_labels("Time", "Signal ratio nucleus/cytoplasm")
+    g.map(sns.lineplot, "Frame", "Ratio_cytoplasm_div_nucleus", data=df_data.loc[df_data['Cell']=='all'], color='black', units='Cell', estimator=None, linewidth=2)
+    g.map(sns.lineplot, "Frame", "Ratio_cytoplasm_div_nucleus", data=df_data.loc[df_data['Cell']!='all'], hue='Cell')
+    g.set_axis_labels("Time", "Signal ratio cytoplasm/nucleus")
     g.add_legend()
     # Save
     # plt.tight_layout()
-    g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"), dpi=300, bbox_inches='tight')
+    g.figure.savefig(os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_cyto-nuc-ratio.pdf"), dpi=300, bbox_inches='tight')
     plt.close(g.figure)    
     
-    print('Plot saved to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_nuc-cyto-ratio.pdf"))
+    print('Plot saved to', os.path.join(output_folder, f"PLOT_{file_name}_Intensity_plot_cyto-nuc-ratio.pdf"))
     plt.style.use("default") # revert style to default for other plots

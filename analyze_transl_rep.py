@@ -22,7 +22,7 @@ import pandas as pd
 ################################################################################
 
 # sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
-sys.path.append('/Users/m.wehrens/Documents/git_repos/_UVA/2024_small-projects/2025_analyze_translocation_reporters_Julian/')
+sys.path.append('/Users/juliandeswart/Desktop/2025_analyze_translocation_reporters')
 
 import Functions.Segmentation as TRseg # Segmentation & tracking functions
     # import importlib; importlib.reload(TRseg)
@@ -141,8 +141,8 @@ def calculate_intensity_values_to_df(MAPPING_CHANNELS, thekey, image_stack, nucl
     df_current = \
         TRmeas.measure_intensities_for_all_timepoints(image_stack_intensity_corrected, nucleus_masks_tracked, cytoplasm_masks_tracked)
     
-    # Calculate nucleus/cyto ratio
-    df_current['Ratio_nucleus_div_cytoplasm'] = df_current['Intensity_nucleus']/df_current['Intensity_cytoplasm']
+    # Calculate cyto/nucleus ratio
+    df_current['Ratio_cytoplasm_div_nucleus'] = df_current['Intensity_cytoplasm']/df_current['Intensity_nucleus']
     # Add key to the df
     df_current['Key'] = thekey
     # Add sample filename to df

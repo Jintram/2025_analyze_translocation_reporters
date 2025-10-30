@@ -13,7 +13,7 @@ from skimage.measure import label
 
 
 def segment_nucleus(image, min_size_objects=30,  area_threshold_holes=50, footprint_opening = 2):
-    # image = imgstack_nucleus[1]; min_size_objects=30;  area_threshold_holes=50; footprint_opening = 2
+    # image = imgstack_nucleus[1]; min_size_objects=15;  area_threshold_holes=50; footprint_opening = 2
     '''
     Segment an image with nuclei based on simple Otsu thresholding.
     Make small improvements to the image by removing small objects and holes, and opening.

@@ -61,6 +61,33 @@ python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucle
 
 
 
+#######
+use this to run through anaconda prompt
+
+>>> input_folder="C:/Users/spalaci/KTR_input"
+>>> output_folder="C:/Users/spalaci/KTR_output"
+>>> auto_correct_bg=0
+
+import sys
+
+# Set up sys.argv manually
+sys.argv = [
+    'analyze_transl_rep.py',
+    input_folder,
+    output_folder,
+    str(auto_correct_bg),  # Make sure it's a string
+    'nucleus', '2', 'ERK', '0', 'PKA', '1'
+]
+
+
+#Set directory (with Python running)
+import os
+>>> os.chdir('C:/Users/spalaci/KTR')
+>>> print(os.getcwd())
+ 
+
+# Run the script
+exec(open("analyze_transl_rep.py").read())
 
  
 

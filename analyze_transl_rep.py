@@ -22,7 +22,7 @@ import pandas as pd
 ################################################################################
 
 # sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
-sys.path.append('/Users/juliandeswart/Desktop/2025_analyze_translocation_reporters')
+sys.path.append('C:/Users/spalaci/KTRs')
 
 import Functions.Segmentation as TRseg # Segmentation & tracking functions
     # import importlib; importlib.reload(TRseg)

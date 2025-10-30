@@ -21,6 +21,7 @@ import pandas as pd
 # Import functions from other files in this repo
 ################################################################################
 
+# sys.path.append('/Users/m.wehrens/Documents/git_repos/_UVA/_SMALL_PROJECTS/2025_analyze_translocation_reporters_Julian/')
 # sys.path.append("/Volumes/sils-mc/13776452/Python_scripts")
 sys.path.append('C:/Users/spalaci/KTRs')
 
@@ -74,13 +75,17 @@ else:
     
 if False:
     
+    # debugging
+    
     # Input and output folders
-    input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
+    # input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/Forskolin/"
     # input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_DATA_julian/testdata/"
-    output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202503_OUTPUT-testmw/"
+    input_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202510_seb-static_DATA/example-data/"
+    output_folder = "/Users/m.wehrens/Data_UVA/2024_10_Sebastian-KTR/202510_seb-static_ANALYSIS/"
     
     # SETTINGS
-    MAPPING_CHANNELS = {'nucleus':0, 'ERK':1, 'PKA':2}
+    # MAPPING_CHANNELS = {'nucleus':0, 'ERK':1, 'PKA':2}
+    MAPPING_CHANNELS = {'nucleus':2, 'ERK':0, 'PKA':1}
     nuclear_channel = MAPPING_CHANNELS['nucleus']
     AUTO_BACKGROUND_CORRECTION = False # only use this if there are areas in the picture with no signal
 
@@ -150,6 +155,23 @@ def calculate_intensity_values_to_df(MAPPING_CHANNELS, thekey, image_stack, nucl
         
     return df_current
         
+def check_dimensions_img(img):
+    ''' 
+    Check if there are three or four dimensions.
+    If there are three, assume these are channels, x, y, and add a 
+    time dimension at the front.
+    ''' 
+    
+    # If 4 dims everything OK
+    if len(img.shape) == 4:
+        return img
+    if len(img.shape) == 3:
+        img_expanded = np.expand_dims(img, axis=0)
+        print('Warning: image has 3 dimensions instead of expected 4, assuming time dimensions is missing, and adding it.')
+        return img_expanded
+    
+    raise ValueError('Image has unexpected number of dimensions, expected 3 or 4, got {0}'.format(len(img.shape)))
+        
         
 ######################################################################
 # Main loop
@@ -164,7 +186,7 @@ for file_path in glob(os.path.join(input_folder, "*.tif")):
     
     # Read current file        
     print(f"Processing file: {file_path}")
-    image_stack = tiff.imread(file_path)    
+    image_stack = check_dimensions_img(tiff.imread(file_path))
     file_name = os.path.splitext(os.path.basename(file_path))[0] # used further down
 
     # Segment the nuclei and track them such that labels are consistent throughout segmentation

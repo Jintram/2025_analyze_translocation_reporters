@@ -61,6 +61,10 @@ python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucle
 
 
 
+
+## Example code by Sebastian
+
+```
 #######
 use this to run through anaconda prompt
 
@@ -88,6 +92,6 @@ import os
 
 # Run the script
 exec(open("analyze_transl_rep.py").read())
-
+```
  
 

@@ -15,7 +15,7 @@ To run the script from the commandline follow these instructions:
 
 - In your terminal define the input_folder (where your data is located) and output_folder (where the output should go) as follows:
 
-_For macbook:_
+_For mac:_
 ```bash
 input_folder="/Path/to/your/input/data/"
 output_folder="Path/to/your/desired/output_folder/"

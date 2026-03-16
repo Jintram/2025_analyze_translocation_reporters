@@ -15,12 +15,22 @@ To run the script from the commandline follow these instructions:
 
 - In your terminal define the input_folder (where your data is located) and output_folder (where the output should go) as follows:
 
+_For macbook:_
 ```bash
 input_folder="/Path/to/your/input/data/"
 output_folder="Path/to/your/desired/output_folder/"
 auto_correct_bg=1
 
 python analyze_transl_rep.py $input_folder $output_folder $auto_correct_bg nucleus 0 ERK 1 PKA 2
+```
+
+_For Windows (cmd or conda prompt)_
+```
+set input_folder="C:\Path\to\your\input\data\"
+set output_folder="C:\Path\to\your\desired\output_folder\"
+set auto_correct_bg=1
+
+python analyze_transl_rep.py %input_folder% %output_folder% %auto_correct_bg% nucleus 0 ERK 1 PKA 2
 ```
 
 - `auto_correct_bg` should be 1 (=yes) or 0 (=no), indicating whether background should be corrected automatically.
